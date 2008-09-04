@@ -1,0 +1,2 @@
+/usr/bin/ar cr libllaudio.a  CMakeFiles/llaudio.dir/audioengine.o CMakeFiles/llaudio.dir/listener.o CMakeFiles/llaudio.dir/llaudiodecodemgr.o CMakeFiles/llaudio.dir/vorbisdecode.o CMakeFiles/llaudio.dir/vorbisencode.o
+/usr/bin/ranlib libllaudio.a
