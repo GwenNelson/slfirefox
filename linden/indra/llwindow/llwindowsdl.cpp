@@ -406,6 +406,9 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 {
 	//bool			glneedsinit = false;
 //    const char *gllibname = null;
+	width  = 1025;
+	height = 768;
+	bits   = 32;
 
 	llinfos << "createContext, fullscreen=" << fullscreen <<
 	    " size=" << width << "x" << height << llendl;
@@ -443,7 +446,7 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 	}
 
 	SDL_EnableUNICODE(1);
-	SDL_WM_SetCaption(mWindowTitle.c_str(), mWindowTitle.c_str());
+//	SDL_WM_SetCaption(mWindowTitle.c_str(), mWindowTitle.c_str());
 
 	// Set the application icon.
 	SDL_Surface *bmpsurface;
@@ -487,7 +490,7 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
         //                   largest available depth buffer of at
         //                   least the minimum size is preferred.
 
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
 #endif
         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, (bits <= 16) ? 1 : 8);
 
@@ -496,8 +499,8 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 	mFullscreen = fullscreen;
 	was_fullscreen = fullscreen;
 
-//	int sdlflags = SDL_OPENGL | SDL_RESIZABLE | SDL_ANYFORMAT;
-	int sdlflags = SDL_OPENGL | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT;
+	int sdlflags = SDL_OPENGL | SDL_RESIZABLE | SDL_ANYFORMAT;
+//	int sdlflags = SDL_OPENGL | SDL_RESIZABLE | SDL_DOUBLEBUF | SDL_ASYNCBLIT;
 
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
@@ -602,15 +605,15 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 	if(!mFullscreen && (mWindow == NULL))
 	{
 		if (width == 0)
-		    width = 1024;
+		    width = 1025;
 		if (height == 0)
 		    width = 768;
 
 		llinfos << "createContext: creating window " << width << "x" << height << "x" << bits << llendl;
 		mWindow = SDL_SetVideoMode(width, height, bits, sdlflags);
-		if (!mWindow && bits > 16)
+		if (!mWindow && bits ==32)
 		{
-			SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+			SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
 			mWindow = SDL_SetVideoMode(width, height, bits, sdlflags);
 		}
 
