@@ -244,7 +244,7 @@ NPError NPP_SetValue(NPP instance, NPNVariable variable, void *value)
   return rv;
 }*/
 
-int16	NPP_HandleEvent(NPP instance, void* event)
+/*(int16	NPP_HandleEvent(NPP instance, void* event)
 {
   if(instance == NULL)
     return 0;
@@ -255,7 +255,7 @@ int16	NPP_HandleEvent(NPP instance, void* event)
 
   uint16 rv = plugin->HandleEvent(event);
   return rv;
-}
+}*/
 
 #ifdef OJI
 jref NPP_GetJavaClass (void)

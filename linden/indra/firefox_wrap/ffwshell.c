@@ -61,12 +61,19 @@
 #include "ff_wrap.h"
 #include "strings.h"
 #include "plstr.h"
+#include "prproces.h"
 
 /***********************************************************************
  *
  * Implementations of plugin API functions
  *
  ***********************************************************************/
+
+
+int16   NPP_HandleEvent(NPP instance, void* event)
+{
+    return 0;
+}
 
 char*
 NPP_GetMIMEDescription(void)
@@ -198,15 +205,14 @@ NPP_Destroy(NPP instance, NPSavedData** save)
     return NPERR_NO_ERROR;
 }
 
-
+PRProcess* viewer_proc = NULL;
 NPError 
 NPP_SetWindow(NPP instance, NPWindow* window)
 {
     PluginInstance* This;
     NPSetWindowCallbackStruct *ws_info;
-   	const SDL_VideoInfo* info = NULL;
-   	char windowEnv[500];
-   	
+    const SDL_VideoInfo* info = NULL;
+    char windowEnv[3][500];
    	
     if (instance == NULL)
         return NPERR_INVALID_INSTANCE_ERROR;
@@ -216,10 +222,13 @@ NPP_SetWindow(NPP instance, NPWindow* window)
     if (This == NULL)
         return NPERR_INVALID_INSTANCE_ERROR;
 
+    fprintf(stderr,"Loading environment for viewer:\n");
     ws_info = (NPSetWindowCallbackStruct *)window->ws_info;
-    sprintf(windowEnv,"SDL_WINDOWID=%d",(int)(window->window)); putenv(windowEnv);
-    sprintf(windowEnv,"FFW_WINX=%d",(int)(window->x)); putenv(windowEnv);
-    sprintf(windowEnv,"FFW_WINY=%d",(int)(window->y)); putenv(windowEnv);
+    sprintf(windowEnv[0],"SDL_WINDOWID=%d",(int)(window->window));
+    sprintf(windowEnv[1],"FFW_WINX=%d",(int)(window->x));
+    sprintf(windowEnv[2],"FFW_WINY=%d",(int)(window->y));
+    int i=0;
+    for(i=0; i<3; i++) putenv(windowEnv[i]);
 
     fprintf(stderr, "Window=(%i)\n", (int)(window->window));
     fprintf(stderr, "W=(%i) H=(%i)\n",(int)window->width, (int)window->height);
@@ -248,14 +257,14 @@ NPP_SetWindow(NPP instance, NPWindow* window)
     glClearColor(1,0,0,1);*/
 	/**/
 #ifdef MOZ_X11
-    if (This->window == (Window) window->window) {
+//    if (This->window == (Window) window->window) {
         /* The page with the plugin is being resized.
            Save any UI information because the next time
            around expect a SetWindow with a new window
            id.
         */
-        return NPERR_NO_ERROR;
-    } else {
+//        return NPERR_NO_ERROR;
+ //   } else {
 
       This->window = (Window) window->window;
       This->x = window->x;
@@ -268,9 +277,21 @@ NPP_SetWindow(NPP instance, NPWindow* window)
       This->colormap = ws_info->colormap;
       makePixmap(This);
       makeWidget(This);
-    }
+//    }
 #endif  /* #ifdef MOZ_X11 */
-    fprintf(stderr,"Done");
+    PRProcessAttr* viewerProcAttr = PR_NewProcessAttr();
+    PR_ProcessAttrSetCurrentDirectory(viewerProcAttr,"/home/gareth/slbrowser/linden/indra/viewer-linux-i686/newview/packaged");
+    if (viewer_proc == NULL) {
+        char viewerArgs[2][50];
+        PRProcessAttr* viewerProcAttr = PR_NewProcessAttr();
+        PR_ProcessAttrSetCurrentDirectory(viewerProcAttr,"/home/gareth/slbrowser/linden/indra/viewer-linux-i686/newview/packaged");
+        sprintf(viewerArgs[0],"/home/gareth/slbrowser/linden/indra/viewer-linux-i686/newview/packaged/secondlife\0");
+        sprintf(viewerArgs[1],"--autologin\0");
+        fprintf(stderr,"Starting viewer!\n");
+        viewer_proc = PR_CreateProcess("/home/gareth/slbrowser/linden/indra/viewer-linux-i686/newview/packaged/secondlife",NULL,NULL,viewerProcAttr);
+        PR_DetachProcess(viewer_proc);
+    }
+
     return NPERR_NO_ERROR;
 }
 
