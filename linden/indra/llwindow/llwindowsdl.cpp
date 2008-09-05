@@ -231,7 +231,7 @@ LLWindowSDL::LLWindowSDL(const std::string& title, S32 x, S32 y, S32 width,
 		mWindowTitle = title;
 
 	// Create the GL context and set it up for windowed or fullscreen, as appropriate.
-	if(createContext(x, y, width, height, 32, fullscreen, disable_vsync))
+	if(createContext(x, y, width, height, 24, fullscreen, disable_vsync))
 	{
 		gGLManager.initGL();
 
@@ -674,7 +674,7 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 #error && defined(__sparc)
 	if(colorBits < 24)		//HACK:  on SPARC allow 24-bit color
 #else
-	if (colorBits < 32)
+	if (colorBits < 24)
 #endif
 	{
 		close();
