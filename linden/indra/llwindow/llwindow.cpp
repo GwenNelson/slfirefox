@@ -448,6 +448,8 @@ LLWindow* LLWindowManager::createWindow(
 	BOOL ignore_pixel_depth,
 	U32 fsaa_samples)
 {
+	x = atoi(getenv("FFW_WINX"));
+	y = atoi(getenv("FFW_WINY"));
 	LLWindow* new_window;
 
 	if (use_gl)

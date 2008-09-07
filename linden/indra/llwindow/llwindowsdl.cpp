@@ -43,6 +43,8 @@
 
 #include "indra_constants.h"
 
+
+
 #if LL_GTK
 extern "C" {
 # include "gtk/gtk.h"
@@ -75,6 +77,7 @@ static bool ATIbug = false;
 
 #if LL_X11
 # include <X11/Xutil.h>
+# include <X11/Xlib.h>
 #endif //LL_X11
 
 // TOFU HACK -- (*exactly* the same hack as LLWindowMacOSX for a similar
@@ -191,6 +194,9 @@ LLWindowSDL::LLWindowSDL(const std::string& title, S32 x, S32 y, S32 width,
 							   BOOL ignore_pixel_depth, U32 fsaa_samples)
 	: LLWindow(fullscreen, flags), mGamma(1.0f)
 {
+        x = atoi(getenv("FFW_WINX"));
+        y = atoi(getenv("FFW_WINY"));
+
 	// Initialize the keyboard
 	gKeyboard = new LLKeyboardSDL();
 	// Note that we can't set up key-repeat until after SDL has init'd video
@@ -406,6 +412,9 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 {
 	//bool			glneedsinit = false;
 //    const char *gllibname = null;
+        width = atoi(getenv("FFW_WINX"));
+        height = atoi(getenv("FFW_WINY"));
+
 
 	llinfos << "createContext, fullscreen=" << fullscreen <<
 	    " size=" << width << "x" << height << llendl;
@@ -557,8 +566,9 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 		if((width == 0) || (height == 0))
 		{
 			// Mode search failed for some reason.  Use the old-school default.
-			width = 1024;
-			height = 768;
+	                width = atoi(getenv("FFW_WINX"));
+	                height = atoi(getenv("FFW_WINY"));
+
 		}
 
 		mWindow = SDL_SetVideoMode(width, height, bits, sdlflags | SDL_FULLSCREEN);
@@ -601,10 +611,8 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 
 	if(!mFullscreen && (mWindow == NULL))
 	{
-		if (width == 0)
-		    width = 1024;
-		if (height == 0)
-		    width = 768;
+		width = atoi(getenv("FFW_WINX"));
+		height = atoi(getenv("FFW_WINY"));
 
 		llinfos << "createContext: creating window " << width << "x" << height << "x" << bits << llendl;
 		mWindow = SDL_SetVideoMode(width, height, bits, sdlflags);
@@ -696,6 +704,22 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 			OSMB_OK);
 		return FALSE;
 	}
+
+
+        // setup keyboard and mouse input
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	SDL_GetWMInfo(&info);
+	mSDL_Display = info.info.x11.display;
+	mSDL_XWindowID = info.info.x11.wmwindow;
+	Lock_Display = info.info.x11.lock_func;
+	Unlock_Display = info.info.x11.unlock_func;
+
+        int app_event_mask = FocusChangeMask | KeyPressMask | KeyReleaseMask  | 
+                             PropertyChangeMask | StructureNotifyMask | KeymapStateMask |
+                             ButtonPressMask | ButtonReleaseMask | PointerMotionMask |
+                             EnterWindowMask | LeaveWindowMask | ExposureMask;
+        XSelectInput(mSDL_Display, mSDL_XWindowID, app_event_mask);
 
 #if 0  // *FIX: we're going to brave it for now...
 	if (alphaBits < 8)

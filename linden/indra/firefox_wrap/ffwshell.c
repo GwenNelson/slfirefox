@@ -1,17 +1,17 @@
 /* -*- Mode: C; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 2 -*-
  *
  * ***** BEGIN LICENSE BLOCK *****
- * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ * Version: GPL 2.0
+ * Copyright(C) 2008 Litesim Ltd
  *
- * The contents of this file are subject to the Mozilla Public License Version
- * 1.1 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
  *
- * Software distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- * for the specific language governing rights and limitations under the
- * License.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
  * The Original Code is mozilla.org code.
  *
@@ -23,38 +23,24 @@
  * Contributor(s):
  *   Stephen Mak <smak@sun.com>
  *
- * Alternatively, the contents of this file may be used under the terms of
- * either the GNU General Public License Version 2 or later (the "GPL"), or
- * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
- * in which case the provisions of the GPL or the LGPL are applicable instead
- * of those above. If you wish to allow use of your version of this file only
- * under the terms of either the GPL or the LGPL, and not to allow others to
- * use your version of this file under the terms of the MPL, indicate your
- * decision by deleting the provisions above and replace them with the notice
- * and other provisions required by the GPL or the LGPL. If you do not delete
- * the provisions above, a recipient may use your version of this file under
- * the terms of any one of the MPL, the GPL or the LGPL.
- *
  * ***** END LICENSE BLOCK ***** */
 
 /*
- * npshell.c
+ * ffwshell.c
  *
  * Netscape Client Plugin API
  * - Function that need to be implemented by plugin developers
  *
- * This file defines a "shell" plugin that plugin developers can use
- * as the basis for a real plugin.  This shell just provides empty
- * implementations of all functions that the plugin can implement
- * that will be called by Netscape (the NPP_xxx methods defined in 
- * npapi.h). 
+ * based on sample code from mozilla.org
  *
  * dp Suresh <dp@netscape.com>
  * updated 5/1998 <pollmann@netscape.com>
  * updated 9/2000 <smak@sun.com>
  * modified 4/2008 <abhinav.lele@gmail.com>
+ * modified 9/2008 <gareth@litesim.com>
  */
 
+#define MOZ_X11
 #include <stdio.h>
 #include <string.h>
 #include "npapi.h"
@@ -62,6 +48,9 @@
 #include "strings.h"
 #include "plstr.h"
 #include "prproces.h"
+#include <X11/Xutil.h>
+#include <X11/Xlib.h>
+
 
 /***********************************************************************
  *
@@ -222,11 +211,16 @@ NPP_SetWindow(NPP instance, NPWindow* window)
     if (This == NULL)
         return NPERR_INVALID_INSTANCE_ERROR;
 
-    fprintf(stderr,"Loading environment for viewer:\n");
     ws_info = (NPSetWindowCallbackStruct *)window->ws_info;
+
+    fprintf(stderr,"Setting up events for viewer\n");
+    int app_event_mask = !ButtonPressMask;
+    XSelectInput(ws_info->display, (int)(window->window), app_event_mask);
+
+    fprintf(stderr,"Loading environment for viewer:\n");
     sprintf(windowEnv[0],"SDL_WINDOWID=%d",(int)(window->window));
-    sprintf(windowEnv[1],"FFW_WINX=%d",(int)(window->x));
-    sprintf(windowEnv[2],"FFW_WINY=%d",(int)(window->y));
+    sprintf(windowEnv[1],"FFW_WINX=%d",(int)(window->width));
+    sprintf(windowEnv[2],"FFW_WINY=%d",(int)(window->height));
     int i=0;
     for(i=0; i<3; i++) putenv(windowEnv[i]);
 
@@ -279,16 +273,14 @@ NPP_SetWindow(NPP instance, NPWindow* window)
       makeWidget(This);
 //    }
 #endif  /* #ifdef MOZ_X11 */
-    PRProcessAttr* viewerProcAttr = PR_NewProcessAttr();
-    PR_ProcessAttrSetCurrentDirectory(viewerProcAttr,"/home/gareth/slbrowser/linden/indra/viewer-linux-i686/newview/packaged");
     if (viewer_proc == NULL) {
         char viewerArgs[2][50];
         PRProcessAttr* viewerProcAttr = PR_NewProcessAttr();
-        PR_ProcessAttrSetCurrentDirectory(viewerProcAttr,"/home/gareth/slbrowser/linden/indra/viewer-linux-i686/newview/packaged");
-        sprintf(viewerArgs[0],"/home/gareth/slbrowser/linden/indra/viewer-linux-i686/newview/packaged/secondlife\0");
+        PR_ProcessAttrSetCurrentDirectory(viewerProcAttr,"/slbrowser/");
+        sprintf(viewerArgs[0],"/slbrowser/packaged/secondlife\0");
         sprintf(viewerArgs[1],"--autologin\0");
         fprintf(stderr,"Starting viewer!\n");
-        viewer_proc = PR_CreateProcess("/home/gareth/slbrowser/linden/indra/viewer-linux-i686/newview/packaged/secondlife",NULL,NULL,viewerProcAttr);
+        viewer_proc = PR_CreateProcess("/slbrowser/secondlife",NULL,NULL,viewerProcAttr);
         PR_DetachProcess(viewer_proc);
     }
 

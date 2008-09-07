@@ -5,7 +5,7 @@ MOZLIBS = -lplds4 -lplc4 -lnspr4
 NPPSRC  = np_entry.cpp  npn_gate.cpp  npp_gate.cpp 
            
 libffwrap.so: $(objects)
-	g++ $(CFLAGS) -lSDL -lgtk-x11-2.0 -lgdk-x11-2.0 -lglib-2.0 -lgobject-2.0 -fshort-wchar -pthread -pipe -Lgecko-sdk/lib/ $(MOZLIBS) -Wall -fPIC -shared -Wl,-z,defs -Wl,-h,$@ -o $@ ff_wrap.o $(NPPSRC) ffwshell.o ffwunix.o -Wl,-rpath-link,gecko-sdk/lib
+	g++ $(CFLAGS) -lX11 -lSDL -lgtk-x11-2.0 -lgdk-x11-2.0 -lglib-2.0 -lgobject-2.0 -fshort-wchar -pthread -pipe -Lgecko-sdk/lib/ $(MOZLIBS) -Wall -fPIC -shared -Wl,-z,defs -Wl,-h,$@ -o $@ ff_wrap.o $(NPPSRC) ffwshell.o ffwunix.o -Wl,-rpath-link,gecko-sdk/lib
 
 $(objects): %.o: %.c
 	gcc -c $(CFLAGS) $< -o $@
