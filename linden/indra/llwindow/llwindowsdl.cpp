@@ -194,8 +194,11 @@ LLWindowSDL::LLWindowSDL(const std::string& title, S32 x, S32 y, S32 width,
 							   BOOL ignore_pixel_depth, U32 fsaa_samples)
 	: LLWindow(fullscreen, flags), mGamma(1.0f)
 {
-        x = atoi(getenv("FFW_WINX"));
-        y = atoi(getenv("FFW_WINY"));
+
+        char* _width = getenv("FFW_WINX");
+        char* _height = getenv("FFW_WINY");
+        if (_width != NULL) x=atoi(_width);
+        if (_height != NULL) y=atoi(_height);
 
 	// Initialize the keyboard
 	gKeyboard = new LLKeyboardSDL();
@@ -412,9 +415,17 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 {
 	//bool			glneedsinit = false;
 //    const char *gllibname = null;
-        width = atoi(getenv("FFW_WINX"));
-        height = atoi(getenv("FFW_WINY"));
+        char* _width = getenv("FFW_WINX");
+        char* _height = getenv("FFW_WINY");
+	if (_width != NULL) width=atoi(_width);
+	if (_height != NULL) height=atoi(_height);
 
+        mSnapshotPath = getenv("SNAPSHOT");
+	if (mSnapshotPath != NULL) {
+		mRunSnapshot = true;
+	} else {
+		mRunSnapshot = false;
+	}
 
 	llinfos << "createContext, fullscreen=" << fullscreen <<
 	    " size=" << width << "x" << height << llendl;
@@ -566,8 +577,12 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 		if((width == 0) || (height == 0))
 		{
 			// Mode search failed for some reason.  Use the old-school default.
-	                width = atoi(getenv("FFW_WINX"));
-	                height = atoi(getenv("FFW_WINY"));
+
+		        char* _width = getenv("FFW_WINX");
+		        char* _height = getenv("FFW_WINY");
+			width = 800; height=600;
+		        if (_width != NULL) width=atoi(_width);
+		        if (_height != NULL) height=atoi(_height);
 
 		}
 
@@ -611,8 +626,8 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
 
 	if(!mFullscreen && (mWindow == NULL))
 	{
-		width = atoi(getenv("FFW_WINX"));
-		height = atoi(getenv("FFW_WINY"));
+		width = 800;
+		height = 600;
 
 		llinfos << "createContext: creating window " << width << "x" << height << "x" << bits << llendl;
 		mWindow = SDL_SetVideoMode(width, height, bits, sdlflags);
@@ -959,10 +974,28 @@ BOOL LLWindowSDL::setSize(const LLCoordScreen size)
 	return TRUE;
 }
 
+void Screendump(char *destFile, short W, short H) {
+	FILE   *out = fopen(destFile, "w");
+	char   pixel_data[3*W*H];
+	short  TGAhead[] = {0, 2, 0, 0, 0, 0, W, H, 24};
+	glReadBuffer(GL_BACK);
+	glReadPixels(0, 0, W, H, GL_BGR, GL_UNSIGNED_BYTE, pixel_data);
+	fwrite(&TGAhead, sizeof(TGAhead), 1, out);
+	fwrite(pixel_data, 3*W*H, 1, out);
+	fclose(out); 
+}
+
+
 void LLWindowSDL::swapBuffers()
 {
-	if (mWindow)
+	if (mWindow) {
 		SDL_GL_SwapBuffers();
+		if (mRunSnapshot) {
+			maybe_lock_display();
+			Screendump(mSnapshotPath,mWindow->w,mWindow->h);
+			maybe_unlock_display();
+		}
+	}		
 }
 
 U32 LLWindowSDL::getFSAASamples()

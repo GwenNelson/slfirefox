@@ -1263,8 +1263,6 @@ set_source_files_properties(${viewer_HEADER_FILES}
                             PROPERTIES HEADER_FILE_ONLY TRUE)
 
 add_executable(secondlife-bin
-    WIN32
-    MACOSX_BUNDLE
     ${viewer_SOURCE_FILES}
     )
 check_message_template(secondlife-bin)

@@ -125,6 +125,8 @@ public:
 	// These are set up by the X11 clipboard initialization code
 	Window mSDL_XWindowID;
 	Display *mSDL_Display;
+	BOOL mRunSnapshot; // should we stream snapshots to disk?
+	char* mSnapshotPath; // Which file to overwrite, WARNING - must be on a ramdrive if you don't want serious problems.....
 #endif
 	void (*Lock_Display)(void);
 	void (*Unlock_Display)(void);
