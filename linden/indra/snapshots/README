@@ -1,0 +1,6 @@
+This directory contains misc utils for streaming images to a ramdisk
+Pass environment variable SNAPSHOT when starting the viewer to use this:
+
+export SNAPSHOT=/tmp/viewer_displays/0
+
+the viewer will then handle symlinking /tmp/viewer_displays/0/a.tga to current.tga and rendering to b.tga, and swapping the symlink as needed (thus providing a form of double-buffering)

@@ -423,6 +423,7 @@ BOOL LLWindowSDL::createContext(int x, int y, int width, int height, int bits, B
         mSnapshotPath = getenv("SNAPSHOT");
 	if (mSnapshotPath != NULL) {
 		mRunSnapshot = true;
+		mCurrentSnapshot = "a.tga";
 	} else {
 		mRunSnapshot = false;
 	}
@@ -991,8 +992,24 @@ void LLWindowSDL::swapBuffers()
 	if (mWindow) {
 		SDL_GL_SwapBuffers();
 		if (mRunSnapshot) {
+			// swap our files over
+			char OldBufferTGAPath[512];
+			char NewBufferTGAPath[512];
+			char CurrentTGAPath[512];
+			sprintf(CurrentTGAPath,"%s/current.tga",mSnapshotPath);
+			if(strcmp(mCurrentSnapshot,"a.tga")==0) {
+				sprintf(OldBufferTGAPath,"%s/a.tga",mSnapshotPath);
+				sprintf(NewBufferTGAPath,"%s/b.tga",mSnapshotPath);
+				mCurrentSnapshot = "b.tga";
+			} else if(strcmp(mCurrentSnapshot,"b.tga")==0) {
+                                sprintf(OldBufferTGAPath,"%s/b.tga",mSnapshotPath);
+                                sprintf(NewBufferTGAPath,"%s/a.tga",mSnapshotPath);
+				mCurrentSnapshot = "a.tga";
+			}
+			unlink(CurrentTGAPath);
+			symlink(OldBufferTGAPath,CurrentTGAPath);
 			maybe_lock_display();
-			Screendump(mSnapshotPath,mWindow->w,mWindow->h);
+			Screendump(NewBufferTGAPath,mWindow->w,mWindow->h);
 			maybe_unlock_display();
 		}
 	}		

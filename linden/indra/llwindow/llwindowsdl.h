@@ -126,7 +126,9 @@ public:
 	Window mSDL_XWindowID;
 	Display *mSDL_Display;
 	BOOL mRunSnapshot; // should we stream snapshots to disk?
-	char* mSnapshotPath; // Which file to overwrite, WARNING - must be on a ramdrive if you don't want serious problems.....
+	char* mSnapshotPath; // Path to .tga snapshots
+	char* mCurrentSnapshot; // Which snapshot file to write to? a.tga or b.tga?
+	
 #endif
 	void (*Lock_Display)(void);
 	void (*Unlock_Display)(void);
