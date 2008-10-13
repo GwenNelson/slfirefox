@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html   PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+<!--   <meta http-equiv="refresh" content="5;3doutput.html"/>-->
+   <meta http-equiv="Pragma" content="no-cache">
+   <meta http-equiv="Expires" content="-1">
+   <style type="text/css">
+    img.top {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	z-index: 2;
+    }
+    img.bottom {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	z-index: 1;
+    }
+   </style>
+   <script type="text/javascript">
+    i = 0;
+    function reloadImageB() {
+       i += 1;
+       if(i>999999999) i=0;
+       document.getElementById('3DoutputB').src = 'http://mrsun.garethnelson.com:8080/sl_output/0?' + i;
+       document.getElementById('3DoutputA').className = 'top';
+       document.getElementById('3DoutputB').className = 'bottom';
+       setTimeout("reloadImageA();", 500);
+    }
+    function reloadImageA() {
+       i += 1;
+       if(i>999999999) i=0;
+       document.getElementById('3DoutputA').src = 'http://mrsun.garethnelson.com:8080/sl_output/0?' + i;
+       document.getElementById('3DoutputB').className = 'top';
+       document.getElementById('3DoutputA').className = 'bottom';
+       setTimeout("reloadImageB();",500);
+    }
+    setTimeout("reloadImageA();",500);
+   </script>
+  </head>
+  <body>
+   <img class="top" src="http://mrsun.garethnelson.com:8080/sl_output/0" id="3DoutputA"/>
+   <img class="bottom" src="http://mrsun.garethnelson.com:8080/sl_output/0" id="3DoutputB"/>
+  </body>
+</html>
